@@ -26,11 +26,24 @@ class Every:
 class Ratio:
 
   def __init__(self, ratio):
+    '''
+    The constructor takes a single argument ratio, which represents the desired frequency of the action relative to the number of steps. 
+    The ratio is stored in _ratio, and _prev is initialized to None. 
+    _prev is used to keep track of the step number the last time the action was performed (or decided to be performed).
+    '''
+    
     assert ratio >= 0, ratio
     self._ratio = ratio
     self._prev = None
 
   def __call__(self, step):
+    '''
+    This method is called with the current step number as its argument. It calculates how many times the action should be repeated based on the elapsed steps since the last action and the specified ratio.
+
+    If _ratio is 0, the function immediately returns 0, indicating that the action should never be performed.
+    If _prev is None (indicating this is the first time the method is called), it sets _prev to the current step and returns 1, signifying that the action should be performed now.
+    Otherwise, it calculates the number of repeats as (step - self._prev) * self._ratio, updates _prev to reflect the new position, and returns the integer number of repeats. This effectively spaces out the actions according to the specified ratio relative to the number of steps.
+    '''
     step = int(step)
     if self._ratio == 0:
       return 0

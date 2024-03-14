@@ -112,7 +112,7 @@ def make_logger(parsed, logdir, step, config):
       embodied.logger.JSONLOutput(logdir, 'metrics.jsonl'),
       embodied.logger.JSONLOutput(logdir, 'scores.jsonl', 'episode/score'),
       embodied.logger.TensorBoardOutput(logdir),
-      # embodied.logger.WandBOutput(logdir.name, config),
+      embodied.logger.WandBOutput(logdir.name, logdir, config),
       # embodied.logger.MLFlowOutput(logdir.name),
   ], multiplier)
   return logger
@@ -169,6 +169,7 @@ def make_env(config, **overrides):
       'minecraft': 'embodied.envs.minecraft:Minecraft',
       'loconav': 'embodied.envs.loconav:LocoNav',
       'pinpad': 'embodied.envs.pinpad:PinPad',
+      'custom': 'embodied.envs.custom_env:CustomEnv'
   }[suite]
   if isinstance(ctor, str):
     module, cls = ctor.split(':')

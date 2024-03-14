@@ -6,6 +6,15 @@ jaxlib
 numpy
 optax
 rich
-ruamel.yaml
+ruamel.yaml==0.17.21
 tensorflow-cpu
 tensorflow_probability
+matplotlib
+opencv-python==4.9.0.80
+pygame==2.1.0
+atari-py==0.2.9
+
+wandb
+# wandb needs:
+moviepy
+imageio

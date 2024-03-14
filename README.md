@@ -62,11 +62,42 @@ below.
 
 ## Manual
 
-Install [JAX][jax] and then the other dependencies:
+Install dependencies:
+
 
 ```sh
+git clone git@github.com:LYK-love/dreamerv3.git
+cd dreamerv3
+conda create -n "DreamerV3" python=3.9
+conda activate DreamerV3
+pip install --upgrade "jax[cuda12_pip]" -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html
+sudo apt update
+sudo apt install ffmpeg
+sudo apt-get install libgl1-mesa-glx libosmesa6
+pip install setuptools==65.5.0 "wheel<0.40.0"
 pip install -r requirements.txt
+export MUJOCO_GL=osmesa
 ```
+
+Then 
+```bash
+cd dreamerv3/scripts
+bash install-atari.sh
+```
+and
+```bash
+cd gym_example
+pip install -e .
+```
+
+Meanwhile, you need to config `wandb`:
+```
+wandb login
+```
+Where do I find my API key? Once you've signed in to www.wandb.ai, the API key will be on the Authorize page.
+
+How do I turn off wandb logging temporarily? If are testing code and want to disable wandb syncing, set the environment variable WANDB_MODE=offline.
+
 
 Simple training script:
 
@@ -75,6 +106,12 @@ python example.py
 ```
 
 Flexible training script:
+```sh
+python dreamerv3/train.py \
+  --logdir ./logdir/$(date \"+%Y%m%d-%H%M%S\") \
+  --configs custom debug --batch_size 16 --run.train_ratio 32
+```
+and
 
 ```sh
 python dreamerv3/train.py \

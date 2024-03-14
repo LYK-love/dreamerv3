@@ -235,7 +235,7 @@ class WandBOutput:
         project="dreamerv3",
         name=logdir.name,
         # sync_tensorboard=True,,
-        entity='word-bots',
+        entity='ssl-lab', 
         config=dict(config),
     )
     self._wandb = wandb

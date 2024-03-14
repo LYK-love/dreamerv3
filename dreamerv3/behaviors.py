@@ -7,7 +7,9 @@ from . import expl
 from . import ninjax as nj
 from . import jaxutils
 
-
+'''
+Different policies: Random, Greedy A2C, A2C
+'''
 class Greedy(nj.Module):
 
   def __init__(self, wm, act_space, config):
@@ -23,7 +25,11 @@ class Greedy(nj.Module):
     return self.ac.initial(batch_size)
 
   def policy(self, latent, state):
-    return self.ac.policy(latent, state)
+    '''
+    @latent: Used by actor to generate `task_out`/`expl_out`, which contains the generated action distribution.
+    @state: Will never change.
+    '''
+    return self.ac.policy(latent, state) 
 
   def train(self, imagine, start, data):
     return self.ac.train(imagine, start, data)

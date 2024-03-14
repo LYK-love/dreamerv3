@@ -9,7 +9,7 @@ def main():
   config = embodied.Config(dreamerv3.configs['defaults'])
   config = config.update(dreamerv3.configs['medium'])
   config = config.update({
-      'logdir': '~/logdir/run1',
+      'logdir': './logdir/run1',
       'run.train_ratio': 64,
       'run.log_every': 30,  # Seconds
       'batch_size': 16,
@@ -28,7 +28,7 @@ def main():
       embodied.logger.TerminalOutput(),
       embodied.logger.JSONLOutput(logdir, 'metrics.jsonl'),
       embodied.logger.TensorBoardOutput(logdir),
-      # embodied.logger.WandBOutput(logdir.name, config),
+      embodied.logger.WandBOutput(logdir.name, logdir, config),
       # embodied.logger.MLFlowOutput(logdir.name),
   ])
 

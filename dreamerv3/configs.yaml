@@ -101,6 +101,14 @@ defaults:
   disag_target: [stoch]
   disag_models: 8
 
+custom:
+  #  <suite>_<task>
+  task: custom_GridWorldEnv
+  envs.amount: 8
+  encoder: {mlp_keys: '$^', cnn_keys: 'image'}
+  decoder: {mlp_keys: '$^', cnn_keys: 'image'}
+  run.train_ratio: 64
+
 minecraft:
 
   task: minecraft_diamond
@@ -121,9 +129,24 @@ dmlab:
   decoder: {mlp_keys: '$^', cnn_keys: 'image'}
   run.train_ratio: 64
 
+# <suite>_<task>
 atari:
+  # task: atari_pong
+  
+  # https://www.gymlibrary.dev/environments/atari/video_pinball/
+  task: atari_video_pinball
 
-  task: atari_pong
+  envs.amount: 8 # 8 envs in parallel
+  run:
+    steps: 5.5e7
+    eval_eps: 10
+    train_ratio: 64
+  encoder: {mlp_keys: '$^', cnn_keys: 'image'}
+  decoder: {mlp_keys: '$^', cnn_keys: 'image'}
+
+atari_jamesbond:
+  task: atari_jamesbond
+
   envs.amount: 8
   run:
     steps: 5.5e7
@@ -131,6 +154,7 @@ atari:
     train_ratio: 64
   encoder: {mlp_keys: '$^', cnn_keys: 'image'}
   decoder: {mlp_keys: '$^', cnn_keys: 'image'}
+
 
 atari100k:
 
