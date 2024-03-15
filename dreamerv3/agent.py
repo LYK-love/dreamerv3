@@ -107,12 +107,14 @@ class Agent(nj.Module):
     
     # dynamic learning. The data is sampled from buffer.
     state, wm_outs, mets = self.wm.train(data, state)
+    
     metrics.update(mets)
     context = {**data, **wm_outs['post']}
     start = tree_map(lambda x: x.reshape([-1] + list(x.shape[2:])), context)
     
     # behavior learning
     _, mets = self.task_behavior.train(self.wm.imagine, start, context)
+    
     metrics.update(mets)
     if self.config.expl_behavior != 'None':
       _, mets = self.expl_behavior.train(self.wm.imagine, start, context)

@@ -106,10 +106,17 @@ python example.py
 ```
 
 Flexible training script:
+
+GridWorld:
 ```sh
 python dreamerv3/train.py \
   --logdir ./logdir/$(date \"+%Y%m%d-%H%M%S\") \
   --configs custom debug --batch_size 16 --run.train_ratio 32
+```
+
+Video Pinball:
+```sh
+WANDB_MODE=online python dreamerv3/train.py --logdir ./logdir/$(date "+%Y%m%d-%H%M%S") --configs atari small --batch_size 16 --run.train_ratio 32
 ```
 and
 
