@@ -1,22 +1,5 @@
 # Mastering Diverse Domains through World Models
 
-A reimplementation of [DreamerV3][paper], a scalable and general reinforcement
-learning algorithm that masters a wide range of applications with fixed
-hyperparameters.
-
-![DreamerV3 Tasks](https://user-images.githubusercontent.com/2111293/217647148-cbc522e2-61ad-4553-8e14-1ecdc8d9438b.gif)
-
-If you find this code useful, please reference in your paper:
-
-```
-@article{hafner2023dreamerv3,
-  title={Mastering Diverse Domains through World Models},
-  author={Hafner, Danijar and Pasukonis, Jurgis and Ba, Jimmy and Lillicrap, Timothy},
-  journal={arXiv preprint arXiv:2301.04104},
-  year={2023}
-}
-```
-
 To learn more:
 
 - [Research paper][paper]
@@ -48,18 +31,6 @@ increases data efficiency.
 
 # Instructions
 
-## Package
-
-If you just want to run DreamerV3 on a custom environment, you can `pip install
-dreamerv3` and copy [`example.py`][example] from this repository as a starting
-point.
-
-## Docker
-
-If you want to make modifications to the code, you can either use the provided
-`Dockerfile` that contains instructions or follow the manual instructions
-below.
-
 ## Manual
 
 Install dependencies:
@@ -81,20 +52,23 @@ export MUJOCO_GL=osmesa
 
 Then 
 ```bash
-cd dreamerv3/scripts
-bash install-atari.sh
+cd <project>
+cd dreamerv3/embodied/scripts
 ```
+Execute commands in `install-atari.sh` sequentially.
 and
 ```bash
+cd <project>
 cd gym_example
 pip install -e .
 ```
 
-Meanwhile, you need to config `wandb`:
+Meanwhile, you need to config `wandb`. In CLI, do
 ```
+export WANDB_MODE=online
 wandb login
 ```
-Where do I find my API key? Once you've signed in to www.wandb.ai, the API key will be on the Authorize page.
+Where do I find my API key? Once you've signed in to www.wandb.ai, the API key will be on the [Authorize](https://wandb.ai/authorize) page.
 
 How do I turn off wandb logging temporarily? If are testing code and want to disable wandb syncing, set the environment variable WANDB_MODE=offline.
 
