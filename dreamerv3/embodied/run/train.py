@@ -59,10 +59,11 @@ def train(agent, env, replay, logger, args):
         stats[f'max_{key}'] = ep[key].max(0).mean()
     metrics.add(stats, prefix='stats')
 
+  #########################################
   driver = embodied.Driver(env)
   driver.on_episode(lambda ep, worker: per_episode(ep))
   driver.on_step(lambda tran, _: step.increment())
-  driver.on_step(replay.add) # After each update step, collect one ep?? to the replay buffer.
+  driver.on_step(replay.add) # Before each update step, collect the step data to the replay buffer.
   # Use a random agent to initialize the replay buffer.
   print('Prefill train dataset.')
   random_agent = embodied.RandomAgent(env.act_space)
@@ -91,7 +92,7 @@ def train(agent, env, replay, logger, args):
       # OK. So in each "update step", there will be one traning (dyn + behavior)
       # The input data `batch[0]` is sampled from the replay buffer.
       # THe initial state is None.
-      outs, state[0], mets = agent.train(batch[0], state[0]) 
+      outs, state[0], mets = agent.train(batch[0], state[0])  # The training
       metrics.add(mets, prefix='train')
       if 'priority' in outs:
         replay.prioritize(outs['key'], outs['priority'])

@@ -42,6 +42,10 @@ class Driver:
       step, episode = self._step(policy, step, episode)
 
   def _step(self, policy, step, episode):
+    '''
+    This is one step of env interaction. At its end all the callbacks will be called.
+    The action is got from the last `step()`. In current `step` we will use action and env to get the new obs and new action.
+    '''
     assert all(len(x) == len(self._env) for x in self._acts.values())
     acts = {k: v for k, v in self._acts.items() if not k.startswith('log_')}
     obs = self._env.step(acts)
@@ -62,7 +66,7 @@ class Driver:
     for i in range(len(self._env)):
       trn = {k: v[i] for k, v in trns.items()}
       [self._eps[i][k].append(v) for k, v in trn.items()]
-      [fn(trn, i, **self._kwargs) for fn in self._on_steps]
+      [fn(trn, i, **self._kwargs) for fn in self._on_steps] # For each callback in `on_steps`, the first param is the step data, 2nd is the env idx.
       step += 1
     if obs['is_last'].any():
       for i, done in enumerate(obs['is_last']):

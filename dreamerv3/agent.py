@@ -100,6 +100,9 @@ class Agent(nj.Module):
     return outs, state
 
   def train(self, data, state):
+    '''
+    The training of DV3.
+    '''
     print("Traing of the DreamerV3")
     self.config.jax.jit and print('Tracing train function.')
     metrics = {}
@@ -123,6 +126,10 @@ class Agent(nj.Module):
     return outs, state, metrics
 
   def report(self, data):
+    '''
+    This will be called in `train_step()` after training
+    Has two parts: wm report and behavior report (metrices)
+    '''
     # Aggregate all reports
     self.config.jax.jit and print('Tracing report function.')
     data = self.preprocess(data)
@@ -244,6 +251,10 @@ class WorldModel(nj.Module):
     return traj
 
   def report(self, data):
+    '''
+    The `data` is the real env data.
+    This report use the wm to transform the data into videos, rewards, etc, and record these transformed infos.
+    '''
     state = self.initial(len(data['is_first']))
     report = {}
     report.update(self.loss(data, state)[-1][-1]) # get a lot of things about loss
