@@ -101,7 +101,7 @@ def train(agent, env, replay, logger, args):
       agent.sync()
     if should_log(step):
       agg = metrics.result()
-      report = agent.report(batch[0])
+      report = agent.report(batch[0]) 
       report = {k: v for k, v in report.items() if 'train/' + k not in agg}
       logger.add(agg)
       logger.add(report, prefix='report')

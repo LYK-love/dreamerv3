@@ -169,7 +169,9 @@ def make_env(config, **overrides):
       'minecraft': 'embodied.envs.minecraft:Minecraft',
       'loconav': 'embodied.envs.loconav:LocoNav',
       'pinpad': 'embodied.envs.pinpad:PinPad',
-      'custom': 'embodied.envs.custom_env:CustomEnv'
+      'GridWorld': 'embodied.envs.grid_world:GridWorldEnv', 
+      'BouncingBall': 'embodied.envs.bouncing_ball:BouncingBallEnv'
+      
   }[suite]
   if isinstance(ctor, str):
     module, cls = ctor.split(':')

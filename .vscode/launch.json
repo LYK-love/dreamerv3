@@ -13,13 +13,43 @@
             "args": "${command:pickArgs}"
         },
         {
-            "name": "Debug GridWorld",
+            "name": "GridWorld",
             "type": "python",
             "request": "launch",
             "program": "${workspaceFolder}/dreamerv3/train.py",
-            "args": "--logdir ./logdir/$(date \"+%Y%m%d-%H%M%S\") --configs custom debug --batch_size 16 --run.train_ratio 32",
+            "args": "--logdir ./logdir/$(date \"+%Y%m%d-%H%M%S\") --configs grid_world debug --batch_size 16 --run.train_ratio 32",
             "console": "integratedTerminal"
         },
+        {
+            "name": "BouncingBall",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/dreamerv3/train.py",
+            "args": "--logdir ./logdir/$(date \"+%Y%m%d-%H%M%S\") --configs bouncing_ball debug --batch_size 16 --run.train_ratio 32",
+            "console": "integratedTerminal"
+        },
+
+        // {
+        //     "name": "GridWorld CKPT",
+        //     "type": "python",
+        //     "request": "launch",
+        //     "program": "${workspaceFolder}/dreamerv3/train.py",
+        //     "args": [
+        //         "--logdir",
+        //         "./logdir/$(date \"+%Y%m%d-%H%M%S\")",
+        //         "--configs",
+        //         "custom",
+        //         "small",
+        //         "--batch_size",
+        //         "16",
+        //         "--run.train_ratio",
+        //         "32",
+        //         "--run.from_checkpoint",
+        //         "logdir/20240317-044409/checkpoint.ckpt"
+        //     ],
+        //     "console": "integratedTerminal",
+        // },
+        
         {
             "name": "Run atari",
             "type": "python",

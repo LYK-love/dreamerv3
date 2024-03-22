@@ -1,14 +1,15 @@
 import embodied
 import numpy as np
 import cv2
-      
+import custom_envs.envs
 
-class CustomEnv(embodied.Env):
+
+class GridWorldEnv(embodied.Env):
 
   def __init__(self, task, size=40, seed=None):
     assert task in ('GridWorldEnv')
-    import gym_examples.envs
-    self._env = gym_examples.envs.GridWorldEnv(size=size, render_mode='rgb_array')
+    # self._env = gym_examples.envs.GridWorldEnv(size=size, render_mode='rgb_array')
+    self._env = custom_envs.envs.grid_world.GridWorldEnv(size=size, render_mode='rgb_array')
     self._done = True
     self._cv2 = cv2
 
@@ -41,7 +42,6 @@ class CustomEnv(embodied.Env):
       return self._obs(image, 0.0, {}, is_first=True)
     image, reward, self._done, info = self._env.step(action['action'])
     reward = np.float32(reward)
-    # terminated = False
     terminated = np.array_equal(self._env._agent_location, self._env._target_location)
     is_terminal = terminated
      

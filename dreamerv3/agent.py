@@ -127,7 +127,7 @@ class Agent(nj.Module):
 
   def report(self, data):
     '''
-    This will be called in `train_step()` after training
+    This will be called in `train_step()` after DV3 training.
     Has two parts: wm report and behavior report (metrices)
     '''
     # Aggregate all reports
@@ -260,25 +260,113 @@ class WorldModel(nj.Module):
     report.update(self.loss(data, state)[-1][-1]) # get a lot of things about loss
     
     
-    # context: the posterior output by transition model
+    clipped_data = {k: v[:6, :5] for k, v in data.items()}
+    unclipped_data = {k: v[:6] for k, v in data.items()}
+    
+    clipped_action = data['action'][:6, :5]
+    unclipped_action = data['action'][:6]
+    
+    clipped_is_first =  data['is_first'][:6, :5]
+    unclipped_is_first =  data['is_first'][:6]
+    
+    
+    clipped_context, _ = self.rssm.observe(
+        self.encoder(data)[:6, :5], clipped_action,
+        clipped_is_first)
+    
+    unclipped_context, _ = self.rssm.observe(
+        self.encoder(data)[:6], unclipped_action,
+        unclipped_is_first)
+    
+    start = {k: v[:, -1] for k, v in clipped_context.items()} 
+    
+    unclipped_recon = self.heads['decoder'](unclipped_context)
+    clipped_recon = self.heads['decoder'](clipped_context)
+    
+    openl = self.heads['decoder'](
+        self.rssm.imagine(unclipped_action[:, 5:], start))
+    
+    start_for_unclipped_imagination = {k: v[:, 0] for k, v in clipped_context.items()} 
+    unclipped_recon_imaged = self.heads['decoder'](
+        self.rssm.imagine(unclipped_action, start_for_unclipped_imagination))
+
+    
+    for key in self.heads['decoder'].cnn_shapes.keys(): # 'image'
+      truth = data[key][:6].astype(jnp.float32)
+      
+      # Concatenate the first 5 images from the mode of recon[key] and the first 59 images from the mode of openl[key] along the 2nd axix (the time axis) so that we get len=64 videos
+      model = jnp.concatenate([clipped_recon[key].mode(), openl[key].mode()], 1)
+      
+      reconstructed_video = unclipped_recon[key].mode()
+      reconstructed_imagined_video = unclipped_recon_imaged[key].mode()
+      
+      error_model = (model - truth + 1) / 2 
+      error_reconstructed_video = (reconstructed_video - truth + 1) / 2
+      error_reconstructed_imagined_video = (reconstructed_imagined_video - truth + 1) / 2
+      
+      
+      video = jnp.concatenate([truth, reconstructed_video, reconstructed_imagined_video, error_model, error_reconstructed_video, error_reconstructed_imagined_video], 2)
+      
+      report[f'openl_{key}'] = jaxutils.video_grid(video)
+      # The result `openl_image` is a 64-frame gif.
+    
+    unclipped_reward = self.heads['reward'](unclipped_context)
+    
+    report[f'unclipped_reward_mode'] = unclipped_reward.mode()
+    report[f'unclipped_reward_mean'] = unclipped_reward.mean()
+    
+    
+    clipped_reward = self.heads['reward'](clipped_context)
+  
+    
+    report[f'clipped_reward_mode'] = clipped_reward.mode()
+    report[f'clipped_reward_mean'] = clipped_reward.mean()
+    
+    return report
+
+  def old_report(self, data):
+    
+    '''
+    The `data` is the real env data.
+    This report use the wm to transform the data into videos, rewards, etc, and record these transformed infos.
+    '''
+    state = self.initial(len(data['is_first']))
+    report = {}
+    report.update(self.loss(data, state)[-1][-1]) # get a lot of things about loss
+    
+    
+    # context: the latent state output by transition model
     # First 6 videos, and first 5 frames about each batch.
     context, _ = self.rssm.observe(
         self.encoder(data)[:6, :5], data['action'][:6, :5],
         data['is_first'][:6, :5])
-    # Taking all batches and the last video/sequence of each batch.
+    
+    # Slice out the last latent (or last image frame) state of each batch as the starting point.
     # Yeah, the imagination starts from the last frame
+    
     start = {k: v[:, -1] for k, v in context.items()} 
     
-    # 6 videos
+    # Since we have 16 video (B=16), here we only report the first 6 videos.
     # the reconstructed video (first 5 frames) from the actual observed data 
     recon = self.heads['decoder'](context)
+    
+    # Convert this reward to a scalar value
+    reward = self.heads['reward'](context)
+    # reward = jnp.mean(reward, axis=(1, 2, 3))
+    
+    reward_mode = reward.mode()
+    reward_mean = reward.mean()
+    
+    print(f"predicted reward mode is: {reward_mode}")
+    print(f"predicted reward mean is: {reward_mean}")
     
     # predicted_reward = self.heads['reward'](context)
     # report.update({"predicted_reward": predicted_reward}) 
     
     # 6 videos
     # First, take the `start`, which is the last frame of the context (actual observed data ), to do the imagination
-    # For each imagined video (len=64), get the last 59 frames, assign it to openl['image']
+    # Since we have 16 videos (B=16), here we only report the first 6 videos.
+    # For each video (len=64), we only report its last 59 frames.
     openl = self.heads['decoder'](
         self.rssm.imagine(data['action'][:6, 5:], start))
     
@@ -289,11 +377,20 @@ class WorldModel(nj.Module):
       
       # Concatenate the first 5 images from the mode of recon[key] and the first 59 images from the mode of openl[key] along the 2nd axix (the time axis) so that we get len=64 videos
       model = jnp.concatenate([recon[key].mode()[:, :5], openl[key].mode()], 1) # Why?
-      error = (model - truth + 1) / 2 # error = gap(reconstruction, truth)
-      video = jnp.concatenate([truth, model, error], 2)
+      
+      reconstructed_video = recon[key].mode()
+      reconstructed_imagined_video = openl[key].mode()
+      
+      error_model = (model - truth + 1) / 2 # error = gap(reconstruction, truth)
+      
+      # video = jnp.concatenate([truth, model, error], 2)
+      video = jnp.concatenate([truth, reconstructed_video, reconstructed_imagined_video, error_model], 2)
+      
       report[f'openl_{key}'] = jaxutils.video_grid(video)
       # The result `openl_image` is a 64-frame gif.
       
+    report[f'reward_mode'] = reward_mode
+    report[f'reward_mean'] = reward_mean
     return report
 
   def _metrics(self, data, dists, post, prior, losses, model_loss):

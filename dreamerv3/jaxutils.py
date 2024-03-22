@@ -158,6 +158,9 @@ class SymlogDist:
 
 
 class DiscDist:
+  '''
+  For reward head.
+  '''
 
   def __init__(
       self, logits, dims=0, low=-20, high=20,

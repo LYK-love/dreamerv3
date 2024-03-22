@@ -101,9 +101,16 @@ defaults:
   disag_target: [stoch]
   disag_models: 8
 
-custom:
+grid_world:
   #  <suite>_<task>
-  task: custom_GridWorldEnv
+  task: GridWorld_GridWorldEnv
+  envs.amount: 8
+  encoder: {mlp_keys: '$^', cnn_keys: 'image'}
+  decoder: {mlp_keys: '$^', cnn_keys: 'image'}
+  run.train_ratio: 64
+
+bouncing_ball:
+  task: BouncingBall_BouncingBallEnv
   envs.amount: 8
   encoder: {mlp_keys: '$^', cnn_keys: 'image'}
   decoder: {mlp_keys: '$^', cnn_keys: 'image'}
