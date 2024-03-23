@@ -6,14 +6,17 @@ import custom_envs.envs
 
 class BouncingBallEnv(embodied.Env):
 
-  def __init__(self, task, size=40, seed=None):
+  def __init__(self, task, size=2, seed=None, velocity_scale = 1.0, ball_radius_ratio = 0.05, wall_thickness_ratio = 0.01, energy_loss_factor=0.9, apply_action=True, log=False):
     assert task in ('BouncingBallEnv')
-    self._env = custom_envs.envs.bouncing_ball.BouncingBallEnv(size=size, render_mode='rgb_array')
+    print(f"apply_action: {apply_action}")
+    self._env = custom_envs.envs.bouncing_ball.BouncingBallEnv(render_mode='rgb_array', size=size, seed=seed, velocity_scale = velocity_scale, ball_radius_ratio=ball_radius_ratio, wall_thickness_ratio = wall_thickness_ratio, energy_loss_factor=energy_loss_factor, apply_action=apply_action, log=log)
     self._done = True
     self._cv2 = cv2
 
   @property
   def obs_space(self):
+    obs_space = self._env.observation_space
+    # print(f"env.obs space shape: {obs_space.shape}")
     self._env.observation_space.shape = (64,64,3) # channel num?
     # s = self._env.observation_space.shape
     # print(f"self._env.observation_space.shape: {s}")

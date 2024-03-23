@@ -43,6 +43,11 @@ class Logger:
     self.add({name: value})
 
   def write(self, fps=False):
+    '''
+    1. Flushes the collected metrics to all specified outputs. If the fps flag is provided and computable, it first logs frames per second as a scalar metric.
+    2. Iterates over each configured output and sends the collected metrics as a tuple.
+    3. Clears the _metrics list after writing to prepare for the next batch of logging.
+    '''
     if fps:
       value = self._compute_fps()
       if value is not None:
@@ -54,12 +59,16 @@ class Logger:
     self._metrics.clear()
 
   def _compute_fps(self):
+    '''
+    1. Computes the training speed in frames (or steps) per second, which can be an essential metric for performance evaluation.
+    2. Uses the current step, the last logged step, and the elapsed time to calculate FPS. This information can be particularly useful for profiling the training process or comparing the efficiency of different configurations or hardware setups.
+    '''
     step = int(self.step) * self.multiplier
     if self._last_step is None:
       self._last_time = time.time()
       self._last_step = step
       return None
-    steps = step - self._last_step
+    steps = step - self._last_step # Where are you???
     duration = time.time() - self._last_time
     self._last_time += duration
     self._last_step = step
@@ -228,19 +237,36 @@ class TensorBoardOutput(AsyncOutput):
 
 class WandBOutput:
 
-  def __init__(self, pattern, logdir, config):
+  def __init__(self, logdir, config, pattern=r'.*reward.*'):
+    '''
+    1. Accepts a pattern (regular expression) to filter which metrics to log, `logdir` as the logging directory (used to name the wandb run for organizational purposes), and the config, which holds the configuration parameters of the model/experiment.
+    2. Initializes a wandb session with the specified project name, run name (derived from logdir.name), entity (team or user namespace in wandb), and configuration parameters. This setup prepares wandb to capture and display data from the current experiment.
+    '''
     self._pattern = re.compile(pattern)
     import wandb
     wandb.init(
         project="dreamerv3",
         name=logdir.name,
-        # sync_tensorboard=True,,
+        # sync_tensorboard=True,
         entity='ssl-lab', 
         config=dict(config),
     )
     self._wandb = wandb
 
   def __call__(self, summaries):
+    '''
+    Takes a list of summaries as input, where each summary is a tuple containing the step (or episode) number, the name of the metric, and its value.
+
+    Organizes metrics by step into a defaultdict of dictionaries, allowing for efficient grouping of metrics that will be logged together in the same wandb step.
+
+    Iterates through each summary and processes it based on its shape:
+        Scalars: If the metric is a scalar (shape of 0) and matches the specified pattern, it's converted to float and added to the corresponding step in the bystep dict.
+        Histograms: For 1-dimensional arrays, creates a wandb Histogram.
+        Images: For 2D or 3D arrays (shape of 2 or 3), it preprocesses the data (clips to [0, 255], converts to uint8, adjusts dimensions) and logs it as an image. The preprocessing ensures compatibility with wandb's image logging requirements.
+        Videos: For 4-dimensional arrays, verifies the channel dimension and rearranges dimensions to match expected video input format for wandb. If necessary, data are scaled and converted to uint8 to ensure compatibility with video logging.
+
+    After processing, logs the collected metrics to wandb using wandb.log, keyed by their step. This ensures that the logged data is associated with the correct point in the training or evaluation process.
+    '''
     bystep = collections.defaultdict(dict)
     wandb = self._wandb
     for step, name, value in summaries:
@@ -248,13 +274,18 @@ class WandBOutput:
         bystep[step][name] = float(value)
       elif len(value.shape) == 1:
         bystep[step][name] = wandb.Histogram(value)
+        
+      # 2D Arrays (shape of 2): These are directly interpretable as grayscale images, 
+      # where one dimension represents the height and the other represents the width.
       elif len(value.shape) == 2:
         value = np.clip(255 * value, 0, 255).astype(np.uint8)
         value = np.transpose(value, [2, 0, 1])
         bystep[step][name] = wandb.Image(value)
+      # 3D Arrays (shape of 3): These arrays are typically interpreted as color images. 
+      # The first two dimensions represent the height and width, similar to the 2D case, while the third dimension usually represents the color channels.
       elif len(value.shape) == 3:
         value = np.clip(255 * value, 0, 255).astype(np.uint8)
-        value = np.transpose(value, [2, 0, 1])
+        value = np.transpose(value, [2, 0, 1]) # The dimension order is often adjusted (e.g., using np.transpose) to ensure the color channel is in the correct position as expected by the visualization tool. This adjustment is crucial for correctly displaying the color information in the image.
         bystep[step][name] = wandb.Image(value)
       elif len(value.shape) == 4:
         # Sanity check that the channeld dimension is last

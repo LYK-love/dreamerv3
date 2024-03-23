@@ -113,12 +113,12 @@ def train(agent, env, replay, logger, args):
   checkpoint = embodied.Checkpoint(logdir / 'checkpoint.ckpt')
   timer.wrap('checkpoint', checkpoint, ['save', 'load'])
   checkpoint.step = step
-  checkpoint.agent = agent
-  checkpoint.replay = replay
+  checkpoint.agent = agent # The `save()` and `save()` methods are implemented in `JAXAgent`.
+  checkpoint.replay = replay # The `save()` and `save()` methods are implemented in their classes.
   if args.from_checkpoint: # By default `from_checkpoint`=False.
     checkpoint.load(args.from_checkpoint)
   checkpoint.load_or_save()
-  should_save(step)  # Register that we justd saved.
+  should_save(step)  # Start timing so that the first `_prev` is set to `now`.
 
   print('Start training loop.')
   policy = lambda *args: agent.policy(
@@ -127,6 +127,6 @@ def train(agent, env, replay, logger, args):
   # The outermost loop
   while step < args.steps:
     driver(policy, steps=100) # C=100 by default.
-    if should_save(step):
+    if should_save(step): # Now use `should_save` to judge whether to save.
       checkpoint.save()
   logger.write()

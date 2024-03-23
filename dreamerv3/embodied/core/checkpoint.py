@@ -17,18 +17,25 @@ class Checkpoint:
       self._promise = None
 
   def __setattr__(self, name, value):
+    '''
+    This method is overridden to enforce that any attribute set on the Checkpoint object (not starting with _ and not being one of the excluded methods) must have both save() and load() methods. 
+    This requirement ensures that only objects that can be serialized and deserialized are added to the checkpoint.
+    '''
     if name in ('exists', 'save', 'load'):
       return super().__setattr__(name, value)
     if name.startswith('_'):
       return super().__setattr__(name, value)
-    has_load = hasattr(value, 'load') and callable(value.load)
-    has_save = hasattr(value, 'save') and callable(value.save)
+    has_load = hasattr(value, 'load') and callable(value.load) # must have load method
+    has_save = hasattr(value, 'save') and callable(value.save) # must have save method
     if not (has_load and has_save):
       message = f"Checkpoint entry '{name}' must implement save() and load()."
       raise ValueError(message)
     self._values[name] = value
 
   def __getattr__(self, name):
+    '''
+    Attempts to retrieve the attribute from the _values dictionary, raising an error if the attribute starts with _ or is not found.
+    '''
     if name.startswith('_'):
       raise AttributeError(name)
     try:
@@ -37,6 +44,9 @@ class Checkpoint:
       raise ValueError(name)
 
   def exists(self, filename=None):
+    '''
+    Checks whether a checkpoint file exists at the specified or default location.
+    '''
     assert self._filename or filename
     filename = path.Path(filename or self._filename)
     exists = self._filename.exists()
@@ -45,6 +55,11 @@ class Checkpoint:
     return exists
 
   def save(self, filename=None, keys=None):
+    '''
+    Saves the current state of all objects registered with the checkpoint. 
+    If parallel execution is enabled, the saving process is submitted as a task to the thread pool executor; otherwise, it's executed in the main thread. 
+    The actual saving logic, including data serialization and file handling, is encapsulated in the _save method.
+    '''
     assert self._filename or filename
     filename = path.Path(filename or self._filename)
     self._log and print(f'Writing checkpoint: {filename}')

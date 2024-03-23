@@ -49,11 +49,14 @@ defaults:
   envs: {amount: 4, parallel: process, length: 0, reset: True, restart: True, discretize: 0, checks: False}
   wrapper: {length: 0, reset: True, discretize: 0, checks: False}
   env:
+    # <suite>: {config}
     atari: {size: [64, 64], repeat: 4, sticky: True, gray: False, actions: all, lives: unused, noops: 0, resize: opencv}
     dmlab: {size: [64, 64], repeat: 4, episodic: True}
     minecraft: {size: [64, 64], break_speed: 100.0}
     dmc: {size: [64, 64], repeat: 2, camera: -1}
     loconav: {size: [64, 64], repeat: 2, camera: -1}
+    GridWorld: {size: 40, seed: None}
+    BouncingBall: {size: 2, seed: None, velocity_scale: 1.0, ball_radius_ratio: 0.05, wall_thickness_ratio: 0.01, energy_loss_factor: 0.9, apply_action: True, log: False}
 
   # Agent
   task_behavior: Greedy

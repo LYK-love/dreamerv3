@@ -122,6 +122,7 @@ class OneHotAction(base.Wrapper):
     return action
 
 
+
 class ExpandScalars(base.Wrapper):
 
   def __init__(self, env):

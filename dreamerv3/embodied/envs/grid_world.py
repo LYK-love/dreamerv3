@@ -15,7 +15,7 @@ class GridWorldEnv(embodied.Env):
 
   @property
   def obs_space(self):
-    self._env.observation_space.shape = (64,64,3) # channel num?
+    self._env.observation_space.shape = (64,64,3)
     # s = self._env.observation_space.shape
     # print(f"self._env.observation_space.shape: {s}")
     spaces = {

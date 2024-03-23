@@ -250,81 +250,81 @@ class WorldModel(nj.Module):
     traj['weight'] = jnp.cumprod(discount * traj['cont'], 0) / discount
     return traj
 
-  def report(self, data):
-    '''
-    The `data` is the real env data.
-    This report use the wm to transform the data into videos, rewards, etc, and record these transformed infos.
-    '''
-    state = self.initial(len(data['is_first']))
-    report = {}
-    report.update(self.loss(data, state)[-1][-1]) # get a lot of things about loss
+  # def report(self, data):
+  #   '''
+  #   The `data` is the real env data.
+  #   This report use the wm to transform the data into videos, rewards, etc, and record these transformed infos.
+  #   '''
+  #   state = self.initial(len(data['is_first']))
+  #   report = {}
+  #   report.update(self.loss(data, state)[-1][-1]) # get a lot of things about loss
     
     
-    clipped_data = {k: v[:6, :5] for k, v in data.items()}
-    unclipped_data = {k: v[:6] for k, v in data.items()}
+  #   clipped_data = {k: v[:6, :5] for k, v in data.items()}
+  #   unclipped_data = {k: v[:6] for k, v in data.items()}
     
-    clipped_action = data['action'][:6, :5]
-    unclipped_action = data['action'][:6]
+  #   clipped_action = data['action'][:6, :5]
+  #   unclipped_action = data['action'][:6]
     
-    clipped_is_first =  data['is_first'][:6, :5]
-    unclipped_is_first =  data['is_first'][:6]
+  #   clipped_is_first =  data['is_first'][:6, :5]
+  #   unclipped_is_first =  data['is_first'][:6]
     
     
-    clipped_context, _ = self.rssm.observe(
-        self.encoder(data)[:6, :5], clipped_action,
-        clipped_is_first)
+  #   clipped_context, _ = self.rssm.observe(
+  #       self.encoder(data)[:6, :5], clipped_action,
+  #       clipped_is_first)
     
-    unclipped_context, _ = self.rssm.observe(
-        self.encoder(data)[:6], unclipped_action,
-        unclipped_is_first)
+  #   unclipped_context, _ = self.rssm.observe(
+  #       self.encoder(data)[:6], unclipped_action,
+  #       unclipped_is_first)
     
-    start = {k: v[:, -1] for k, v in clipped_context.items()} 
+  #   start = {k: v[:, -1] for k, v in clipped_context.items()} 
     
-    unclipped_recon = self.heads['decoder'](unclipped_context)
-    clipped_recon = self.heads['decoder'](clipped_context)
+  #   unclipped_recon = self.heads['decoder'](unclipped_context)
+  #   clipped_recon = self.heads['decoder'](clipped_context)
     
-    openl = self.heads['decoder'](
-        self.rssm.imagine(unclipped_action[:, 5:], start))
+  #   openl = self.heads['decoder'](
+  #       self.rssm.imagine(unclipped_action[:, 5:], start))
     
-    start_for_unclipped_imagination = {k: v[:, 0] for k, v in clipped_context.items()} 
-    unclipped_recon_imaged = self.heads['decoder'](
-        self.rssm.imagine(unclipped_action, start_for_unclipped_imagination))
+  #   start_for_unclipped_imagination = {k: v[:, 0] for k, v in clipped_context.items()} 
+  #   unclipped_recon_imaged = self.heads['decoder'](
+  #       self.rssm.imagine(unclipped_action, start_for_unclipped_imagination))
 
     
-    for key in self.heads['decoder'].cnn_shapes.keys(): # 'image'
-      truth = data[key][:6].astype(jnp.float32)
+  #   for key in self.heads['decoder'].cnn_shapes.keys(): # 'image'
+  #     truth = data[key][:6].astype(jnp.float32)
       
-      # Concatenate the first 5 images from the mode of recon[key] and the first 59 images from the mode of openl[key] along the 2nd axix (the time axis) so that we get len=64 videos
-      model = jnp.concatenate([clipped_recon[key].mode(), openl[key].mode()], 1)
+  #     # Concatenate the first 5 images from the mode of recon[key] and the first 59 images from the mode of openl[key] along the 2nd axix (the time axis) so that we get len=64 videos
+  #     model = jnp.concatenate([clipped_recon[key].mode(), openl[key].mode()], 1)
       
-      reconstructed_video = unclipped_recon[key].mode()
-      reconstructed_imagined_video = unclipped_recon_imaged[key].mode()
+  #     reconstructed_video = unclipped_recon[key].mode()
+  #     reconstructed_imagined_video = unclipped_recon_imaged[key].mode()
       
-      error_model = (model - truth + 1) / 2 
-      error_reconstructed_video = (reconstructed_video - truth + 1) / 2
-      error_reconstructed_imagined_video = (reconstructed_imagined_video - truth + 1) / 2
+  #     error_model = (model - truth + 1) / 2 
+  #     error_reconstructed_video = (reconstructed_video - truth + 1) / 2
+  #     error_reconstructed_imagined_video = (reconstructed_imagined_video - truth + 1) / 2
       
       
-      video = jnp.concatenate([truth, reconstructed_video, reconstructed_imagined_video, error_model, error_reconstructed_video, error_reconstructed_imagined_video], 2)
+  #     video = jnp.concatenate([truth, reconstructed_video, reconstructed_imagined_video, error_model, error_reconstructed_video, error_reconstructed_imagined_video], 2)
       
-      report[f'openl_{key}'] = jaxutils.video_grid(video)
-      # The result `openl_image` is a 64-frame gif.
+  #     report[f'openl_{key}'] = jaxutils.video_grid(video)
+  #     # The result `openl_image` is a 64-frame gif.
     
-    unclipped_reward = self.heads['reward'](unclipped_context)
+  #   unclipped_reward = self.heads['reward'](unclipped_context)
     
-    report[f'unclipped_reward_mode'] = unclipped_reward.mode()
-    report[f'unclipped_reward_mean'] = unclipped_reward.mean()
+  #   report[f'unclipped_reward_mode'] = unclipped_reward.mode()
+  #   report[f'unclipped_reward_mean'] = unclipped_reward.mean()
     
     
-    clipped_reward = self.heads['reward'](clipped_context)
+  #   clipped_reward = self.heads['reward'](clipped_context)
   
     
-    report[f'clipped_reward_mode'] = clipped_reward.mode()
-    report[f'clipped_reward_mean'] = clipped_reward.mean()
+  #   report[f'clipped_reward_mode'] = clipped_reward.mode()
+  #   report[f'clipped_reward_mean'] = clipped_reward.mean()
     
-    return report
+  #   return report
 
-  def old_report(self, data):
+  def report(self, data):
     
     '''
     The `data` is the real env data.
@@ -384,13 +384,13 @@ class WorldModel(nj.Module):
       error_model = (model - truth + 1) / 2 # error = gap(reconstruction, truth)
       
       # video = jnp.concatenate([truth, model, error], 2)
-      video = jnp.concatenate([truth, reconstructed_video, reconstructed_imagined_video, error_model], 2)
+      video = jnp.concatenate([truth, model, error_model], 2)
       
       report[f'openl_{key}'] = jaxutils.video_grid(video)
       # The result `openl_image` is a 64-frame gif.
       
-    report[f'reward_mode'] = reward_mode
-    report[f'reward_mean'] = reward_mean
+    # report[f'reward_mode'] = reward_mode
+    # report[f'reward_mean'] = reward_mean
     return report
 
   def _metrics(self, data, dists, post, prior, losses, model_loss):

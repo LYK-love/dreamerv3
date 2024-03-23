@@ -24,11 +24,12 @@ def main():
 
   logdir = embodied.Path(config.logdir)
   step = embodied.Counter()
+
   logger = embodied.Logger(step, [
       embodied.logger.TerminalOutput(),
       embodied.logger.JSONLOutput(logdir, 'metrics.jsonl'),
       embodied.logger.TensorBoardOutput(logdir),
-      embodied.logger.WandBOutput(logdir.name, logdir, config),
+      embodied.logger.WandBOutput(logdir, config),
       # embodied.logger.MLFlowOutput(logdir.name),
   ])
 

@@ -86,6 +86,9 @@ class Clock:
     self._prev = None
 
   def __call__(self, step=None):
+    '''
+    Use `save_every` to judge whether to save the checkpoint.
+    '''
     if self._every < 0:
       return True
     if self._every == 0:
