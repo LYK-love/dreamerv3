@@ -41,7 +41,7 @@
             "type": "python",
             "request": "launch",
             "program": "${workspaceFolder}/dreamerv3/train.py",
-            "args": "--logdir ./logdir/BouncingBall --configs bouncing_ball small --batch_size 16 --run.train_ratio 32 --run.from_checkpoint logdir/BouncingBall/checkpoint.ckpt",
+            "args": "--logdir ./logdir/BouncingBall --configs bouncing_ball small --batch_size 16 --run.train_ratio 32 --run.from_checkpoint logdir/BouncingBall/checkpoint.ckpt --run.only_train True",
             "console": "integratedTerminal"
         },
         

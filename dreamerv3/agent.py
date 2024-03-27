@@ -102,7 +102,7 @@ class Agent(nj.Module):
     state = ((latent, outs['action']), task_state, expl_state) # Only first 2 elements of `state` will change. The 1st is the latent state, the 2nd is the sampled generated action.
     return outs, state
 
-  def train(self, data, state, only_dyn=False):
+  def train(self, data, state):
     '''
     The training of DV3.
     '''
@@ -119,9 +119,6 @@ class Agent(nj.Module):
     
     outs = {}
     
-    
-    if only_dyn:
-      return outs, state, metrics
     
     #######################################################
     ## Skip Behavir learning
