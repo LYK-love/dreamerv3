@@ -36,6 +36,14 @@ class Driver:
   def on_episode(self, callback):
     self._on_episodes.append(callback)
 
+  def only_train(self, train_func, steps=0, episodes=0):
+    '''
+    Only training. No env interaction and policy.
+    '''
+    step, episode = 0, 0
+    while step < steps or episode < episodes:
+      train_func(None, None)
+    
   def __call__(self, policy, steps=0, episodes=0):
     step, episode = 0, 0
     while step < steps or episode < episodes:
@@ -51,7 +59,9 @@ class Driver:
     obs = self._env.step(acts)
     obs = {k: convert(v) for k, v in obs.items()}
     assert all(len(x) == len(self._env) for x in obs.values()), obs
+    
     acts, self._state = policy(obs, self._state, **self._kwargs)
+    
     acts = {k: convert(v) for k, v in acts.items()}
     if obs['is_last'].any():
       mask = 1 - obs['is_last']

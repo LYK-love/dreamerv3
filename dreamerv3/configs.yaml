@@ -46,6 +46,8 @@ defaults:
     actor_addr: 'ipc:///tmp/5551'
     actor_batch: 32
 
+    only_train: True
+
   envs: {amount: 4, parallel: process, length: 0, reset: True, restart: True, discretize: 0, checks: False}
   wrapper: {length: 0, reset: True, discretize: 0, checks: False}
   env:
@@ -56,7 +58,7 @@ defaults:
     dmc: {size: [64, 64], repeat: 2, camera: -1}
     loconav: {size: [64, 64], repeat: 2, camera: -1}
     GridWorld: {size: 40, seed: None}
-    BouncingBall: {size: 2, seed: None, velocity_scale: 1.0, ball_radius_ratio: 0.05, wall_thickness_ratio: 0.01, energy_loss_factor: 0.9, apply_action: True, log: False}
+    BouncingBall: {size: 2, seed: None, velocity_scale: 1.0, ball_radius_ratio: 0.02, wall_thickness_ratio: 0.01, energy_loss_factor: 0.9, apply_action: False, log: False}
 
   # Agent
   task_behavior: Greedy

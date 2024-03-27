@@ -28,7 +28,7 @@ class Generic:
       self.online_queue = deque()
       self.online_stride = length
       self.online_counters = defaultdict(int)
-    self.saver = directory and saver.Saver(directory, chunks)
+    self.saver = directory and saver.Saver(directory, chunks)# The most weird code I've ever seen.
     self.metrics = {
         'samples': 0,
         'sample_wait_dur': 0,
@@ -134,12 +134,34 @@ class Generic:
     # }
 
   def load(self, data=None):
+    '''
+    
+    
+    '''
+    # Check for a Saver Instance: The method first checks if a saver object exists. If not, it returns immediately.
     if not self.saver:
       return
+    
+    # Initialize a Set of Workers: A set named workers is initialized. This will be used to keep track of unique workers (e.g., threads or processes that were involved in data collection) that have contributed data to the loading process.
     workers = set()
+    
+    # Iterate Over Loaded Data: The method iterates over the data loaded by the saver object. 
+    # This iteration yields tuples containing a step and a worker identifier. 
+    # Each step is a piece of data (such as an observation or experience) that was previously saved, and worker identifies which worker the data came from.
+    has_loaded = False
     for step, worker in self.saver.load(self.capacity, self.length):
+      if not has_loaded:
+        print(f"Loading steps from {self.saver.directory} with worker {worker}...")
+        has_loaded = True
       workers.add(worker)
-      self.add(step, worker, load=True)
+      self.add(step, worker, load=True) # adds the step to the replay buffer, associating it with the correct worker and marking it as loaded data (load=True). 
+    
+    if not has_loaded:
+      print(f"No steps loaded from {self.saver.directory}.")
+      
+    # Cleanup for Each Worker: After all data has been loaded and processed, the method performs cleanup for each worker that contributed data. 
+    # This involves deleting the worker-specific streams and counters from the self.streams and self.counters dictionaries, respectively. 
+    # These dictionaries manage ongoing data streams and counters for data processing and need to be reset or cleared for workers that are no longer active or whose data has been fully loaded.
     for worker in workers:
       del self.streams[worker]
       del self.counters[worker]

@@ -36,6 +36,15 @@
             "args": "--logdir ./logdir/$(date \"+%Y%m%d-%H%M%S\") --configs grid_world small --batch_size 16 --run.train_ratio 32 --run.log_every 1",
             "console": "integratedTerminal"
         },
+        {
+            "name": "Pre-trained",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/dreamerv3/train.py",
+            "args": "--logdir ./logdir/BouncingBall --configs bouncing_ball small --batch_size 16 --run.train_ratio 32 --run.from_checkpoint logdir/BouncingBall/checkpoint.ckpt",
+            "console": "integratedTerminal"
+        },
+        
 
         // {
         //     "name": "GridWorld CKPT",

@@ -8,7 +8,7 @@ class BouncingBallEnv(embodied.Env):
 
   def __init__(self, task, size=2, seed=None, velocity_scale = 1.0, ball_radius_ratio = 0.05, wall_thickness_ratio = 0.01, energy_loss_factor=0.9, apply_action=True, log=False):
     assert task in ('BouncingBallEnv')
-    print(f"apply_action: {apply_action}")
+    # print(f"apply_action: {apply_action}")
     self._env = custom_envs.envs.bouncing_ball.BouncingBallEnv(render_mode='rgb_array', size=size, seed=seed, velocity_scale = velocity_scale, ball_radius_ratio=ball_radius_ratio, wall_thickness_ratio = wall_thickness_ratio, energy_loss_factor=energy_loss_factor, apply_action=apply_action, log=log)
     self._done = True
     self._cv2 = cv2
@@ -44,7 +44,19 @@ class BouncingBallEnv(embodied.Env):
       image = self._env.reset()
       return self._obs(image, 0.0, {}, is_first=True)
     image, reward, self._done, info = self._env.step(action['action'])
+    
     reward = np.float32(reward)
+    
+    # print(f"info: {info}")
+    
+    # print(f"reward from env: {reward}")
+    # if reward > 0:
+    #   print("Booom ========================================")
+    #   print(f"reward: {reward}")
+    #   print("Booom ========================================")
+      
+    # print(f"converted reward: {reward}")
+    
     terminated = False
     # terminated = np.array_equal(self._env._agent_location, self._env._target_location)
     is_terminal = terminated

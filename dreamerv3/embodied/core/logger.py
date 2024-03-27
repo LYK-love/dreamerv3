@@ -237,7 +237,7 @@ class TensorBoardOutput(AsyncOutput):
 
 class WandBOutput:
 
-  def __init__(self, logdir, config, pattern=r'.*reward.*'):
+  def __init__(self, logdir, config, pattern=r'.*'):
     '''
     1. Accepts a pattern (regular expression) to filter which metrics to log, `logdir` as the logging directory (used to name the wandb run for organizational purposes), and the config, which holds the configuration parameters of the model/experiment.
     2. Initializes a wandb session with the specified project name, run name (derived from logdir.name), entity (team or user namespace in wandb), and configuration parameters. This setup prepares wandb to capture and display data from the current experiment.

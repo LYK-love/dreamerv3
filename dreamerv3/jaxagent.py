@@ -59,17 +59,21 @@ class JAXAgent(embodied.Agent):
       state = tree_map(
           np.asarray, state, is_leaf=lambda x: isinstance(x, list))
       state = self._convert_inps(state, self.policy_devices)
-    (outs, state), _ = self._policy(varibs, rng, obs, state, mode=mode)
+    (outs, state), _ = self._policy(varibs, rng, obs, state, mode=mode) # The `policy()` of `Agent` class.
     outs = self._convert_outs(outs, self.policy_devices)
     # TODO: Consider keeping policy states in accelerator memory.
     state = self._convert_outs(state, self.policy_devices)
     return outs, state
 
   def train(self, data, state=None):
+    '''
+    
+    '''
+    print("JaxAgent training... It's the wrapper of the underlying agent training.")
     rng = self._next_rngs(self.train_devices)
     if state is None:
       state, self.varibs = self._init_train(self.varibs, rng, data['is_first'])
-    (outs, state, mets), self.varibs = self._train(
+    (outs, state, mets), self.varibs = self._train( # Here, we call the inner `Agent`'s train(), which is dyn and behavior learning.
         self.varibs, rng, data, state)
     outs = self._convert_outs(outs, self.train_devices)
     self._updates.increment()
@@ -80,7 +84,11 @@ class JAXAgent(embodied.Agent):
     if self._once:
       self._once = False
       assert jaxutils.Optimizer.PARAM_COUNTS
+      
+      # When I only use dyn learning, I won't have count for params of critic and actor.
       for name, count in jaxutils.Optimizer.PARAM_COUNTS.items():
+        if count is None:
+          continue
         mets[f'params_{name}'] = float(count)
     return outs, state, mets
 

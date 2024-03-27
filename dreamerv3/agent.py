@@ -23,6 +23,9 @@ from . import ninjax as nj
 class Agent(nj.Module):
   '''
   DreamerV3. The agent has its world model and policy.
+  
+  When @jaxagent.Wrapper decorates the Agent class, it effectively replaces Agent with a new class that inherits from JAXAgent. 
+  This new class retains the original Agent's configurations (configs) and reference (inner) but is now wrapped with any additional behavior or properties defined in JAXAgent or altered in the Wrapper's Agent class.
   '''
   configs = yaml.YAML(typ='safe').load(
       (embodied.Path(__file__).parent / 'configs.yaml').read())
@@ -99,11 +102,12 @@ class Agent(nj.Module):
     state = ((latent, outs['action']), task_state, expl_state) # Only first 2 elements of `state` will change. The 1st is the latent state, the 2nd is the sampled generated action.
     return outs, state
 
-  def train(self, data, state):
+  def train(self, data, state, only_dyn=False):
     '''
     The training of DV3.
     '''
-    print("Traing of the DreamerV3")
+    print("Training of the DreamerV3, including dynamic and behavior training.")
+    
     self.config.jax.jit and print('Tracing train function.')
     metrics = {}
     data = self.preprocess(data)
@@ -112,9 +116,19 @@ class Agent(nj.Module):
     state, wm_outs, mets = self.wm.train(data, state)
     
     metrics.update(mets)
+    
+    outs = {}
+    
+    
+    if only_dyn:
+      return outs, state, metrics
+    
+    #######################################################
+    ## Skip Behavir learning
+    #######################################################
+    
     context = {**data, **wm_outs['post']}
     start = tree_map(lambda x: x.reshape([-1] + list(x.shape[2:])), context)
-    
     # behavior learning
     _, mets = self.task_behavior.train(self.wm.imagine, start, context)
     
@@ -122,7 +136,7 @@ class Agent(nj.Module):
     if self.config.expl_behavior != 'None':
       _, mets = self.expl_behavior.train(self.wm.imagine, start, context)
       metrics.update({'expl_' + key: value for key, value in mets.items()})
-    outs = {}
+      
     return outs, state, metrics
 
   def report(self, data):
