@@ -56,10 +56,12 @@ cd <project>
 cd dreamerv3/embodied/scripts
 ```
 Execute commands in `install-atari.sh` sequentially.
-and
+
+After that, you need to install `CustomGymEnvs` as a git submodule.
 ```bash
 cd <project>
-cd gym_example
+cd CustomGymEnvs
+git submodule update --init --recursive
 pip install -e .
 ```
 
@@ -70,7 +72,7 @@ wandb login
 ```
 Where do I find my API key? Once you've signed in to www.wandb.ai, the API key will be on the [Authorize](https://wandb.ai/authorize) page.
 
-How do I turn off wandb logging temporarily? If are testing code and want to disable wandb syncing, set the environment variable WANDB_MODE=offline.
+How do I turn off wandb logging temporarily? If are testing code and want to disable wandb syncing, set the environment variable `WANDB_MODE=offline`.
 
 
 Simple training script:
