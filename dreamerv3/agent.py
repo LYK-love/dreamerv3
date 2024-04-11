@@ -120,19 +120,20 @@ class Agent(nj.Module):
     outs = {}
     
     
-    #######################################################
-    ## Skip Behavir learning
-    #######################################################
+    ######################################################
+    # Skip Behavir learning
+    # This is the only thing we should do
+    ######################################################
     
-    # context = {**data, **wm_outs['post']}
-    # start = tree_map(lambda x: x.reshape([-1] + list(x.shape[2:])), context)
-    # # behavior learning
-    # _, mets = self.task_behavior.train(self.wm.imagine, start, context)
+    context = {**data, **wm_outs['post']}
+    start = tree_map(lambda x: x.reshape([-1] + list(x.shape[2:])), context)
+    # behavior learning
+    _, mets = self.task_behavior.train(self.wm.imagine, start, context)
     
-    # metrics.update(mets)
-    # if self.config.expl_behavior != 'None':
-    #   _, mets = self.expl_behavior.train(self.wm.imagine, start, context)
-    #   metrics.update({'expl_' + key: value for key, value in mets.items()})
+    metrics.update(mets)
+    if self.config.expl_behavior != 'None':
+      _, mets = self.expl_behavior.train(self.wm.imagine, start, context)
+      metrics.update({'expl_' + key: value for key, value in mets.items()})
       
     return outs, state, metrics
 
