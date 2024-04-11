@@ -8,3 +8,5 @@ __pycache__/
 *.egg-info
 MUJOCO_LOG.TXT
 ;
+dreamerv3/images
+dreamerv3/checkpoints
