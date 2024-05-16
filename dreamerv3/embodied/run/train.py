@@ -114,39 +114,6 @@ def train(agent, env, replay, logger, args):
       logger.add(replay.stats, prefix='replay')
       logger.add(timer.stats(), prefix='timer')
       logger.write(fps=True)
-  
-  def train_step_for_only_training_mode(tran, worker):
-    '''
-    Although we have `tran` as param. We don't use it. In training we only use the samples from buffer.
-    '''
-    repeats = should_train(step) # Either 0 (not training) or 1 (traiing).
-    # print(f"repeats: {repeats}")
-    
-    # If you have args.train_ratio = 3 and args.batch_steps = 16, then args.train_ratio / args.batch_steps gives 0.1875. 
-    # This means, on average, you want the training to happen once every approximately 5.33 (1 / 0.1875) steps.
-    for _ in range(repeats):
-      with timer.scope('dataset'):
-        batch[0] = next(dataset)
-      # OK. So in each "update step", there will be one training (dyn + behavior)
-      # The input data `batch[0]` is sampled from the replay buffer.
-      # THe initial state is None.
-      outs, state[0], mets = agent.train(batch[0], state[0])  # The training of JaxAgent.
-      metrics.add(mets, prefix='train')
-      if 'priority' in outs:
-        replay.prioritize(outs['key'], outs['priority'])
-      updates.increment()
-    if should_sync(updates):
-      agent.sync()
-    if should_log(step):
-      agg = metrics.result()
-      report = agent.report(batch[0]) 
-      report = {k: v for k, v in report.items() if 'train/' + k not in agg}
-      logger.add(agg)
-      logger.add(report, prefix='report')
-      logger.add(replay.stats, prefix='replay')
-      logger.add(timer.stats(), prefix='timer')
-      logger.write(fps=True)
-      
   driver.on_step(train_step) # Each step call `train_step` one time
 
   checkpoint = embodied.Checkpoint(logdir / 'checkpoint.ckpt')
@@ -165,11 +132,7 @@ def train(agent, env, replay, logger, args):
   
   # The outermost loop
   while step < args.steps:
-    if args.only_train:
-      print('only training...')
-      driver.only_train(train_step, steps=100)
-    else:
-      driver(policy, steps=100) # C=100 by default.
+    driver(policy, steps=100) # C=100 by default.
       
     # driver(policy, steps=100) # C=100 by default.
     

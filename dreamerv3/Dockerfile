@@ -1,5 +1,5 @@
 # 1. Test setup:
-# docker run -it --rm --gpus all nvidia/cuda:11.4.2-cudnn8-runtime-ubuntu20.04 nvidia-smi
+# docker run -it --rm --gpus all nvidia/cuda:11.4.3-cudnn8-runtime-ubuntu20.04 nvidia-smi
 #
 # If the above does not work, try adding the --privileged flag
 # and changing the command to `sh -c 'ldconfig -v && nvidia-smi'`.
@@ -15,7 +15,7 @@
 # tensorboard --logdir ~/logdir
 
 # System
-FROM nvidia/cuda:11.4.2-cudnn8-devel-ubuntu20.04
+FROM nvidia/cuda:11.4.3-cudnn8-devel-ubuntu20.04
 ARG DEBIAN_FRONTEND=noninteractive
 ENV TZ=America/San_Francisco
 ENV PYTHONUNBUFFERED 1
@@ -30,7 +30,7 @@ RUN pip3 install --upgrade pip
 # Envs
 ENV MUJOCO_GL egl
 ENV DMLAB_DATASET_PATH /dmlab_data
-COPY scripts scripts
+COPY dreamerv3/embodied/scripts scripts
 RUN sh scripts/install-dmlab.sh
 RUN sh scripts/install-atari.sh
 RUN sh scripts/install-minecraft.sh

@@ -72,6 +72,9 @@ class RSSM(nj.Module):
     return prior
 
   def get_dist(self, state, argmax=False):
+    '''
+    Create a distribution from the given `state`, say a posterior or prior.
+    '''
     if self._classes:
       logit = state['logit'].astype(f32)
       return tfd.Independent(jaxutils.OneHotDist(logit), 1)

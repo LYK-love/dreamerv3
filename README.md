@@ -44,6 +44,7 @@ conda activate DreamerV3
 pip install --upgrade "jax[cuda12_pip]" -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html
 sudo apt update
 sudo apt install ffmpeg
+sudo apt install xvfb
 sudo apt-get install libgl1-mesa-glx libosmesa6
 pip install setuptools==65.5.0 "wheel<0.40.0"
 pip install -r requirements.txt
@@ -85,12 +86,17 @@ Flexible training script:
 
 GridWorld:
 ```sh
-WANDB_MODE=online python dreamerv3/train.py --logdir ./logdir/$(date "+%Y%m%d-%H%M%S") --configs custom small --batch_size 16 --run.train_ratio 32
+WANDB_MODE=online python dreamerv3/train.py --logdir ./logdir/$(date "+%Y%m%d-%H%M%S") --configs grid_world small --batch_size 16 --run.train_ratio 32
 ```
 
 Video Pinball:
 ```sh
-WANDB_MODE=online python dreamerv3/train.py --logdir ./logdir/$(date "+%Y%m%d-%H%M%S") --configs atari small --batch_size 16 --run.train_ratio 32
+# export CKPT="logdir/video_pinball/checkpoint.ckpt" 
+export LOGDIR="logdir/video_pinball"
+export SIZE="debug"
+export WANDB_MODE=online
+sh dreamerv3/embodied/scripts/xvfb_run.sh \
+python dreamerv3/train.py --logdir $LOGDIR --configs atari $SIZE
 ```
 and
 

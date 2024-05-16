@@ -46,7 +46,7 @@ defaults:
     actor_addr: 'ipc:///tmp/5551'
     actor_batch: 32
 
-    only_train: True
+    # only_train: True
 
   envs: {amount: 4, parallel: process, length: 0, reset: True, restart: True, discretize: 0, checks: False}
   wrapper: {length: 0, reset: True, discretize: 0, checks: False}
@@ -244,7 +244,7 @@ loconav:
   encoder: {mlp_keys: '.*', cnn_keys: 'image'}
   decoder: {mlp_keys: '.*', cnn_keys: 'image'}
 
-small:
+small: # S
   rssm.deter: 512
   .*\.cnn_depth: 32
   .*\.units: 512
@@ -262,7 +262,7 @@ large:
   .*\.units: 768
   .*\.layers: 4
 
-xlarge:
+xlarge: # XL
   rssm.deter: 4096
   .*\.cnn_depth: 96
   .*\.units: 1024

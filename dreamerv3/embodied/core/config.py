@@ -25,14 +25,26 @@ class Config(dict):
   def flat(self):
     return self._flat.copy()
 
+  # def save(self, filename):
+  #   filename = path.Path(filename)
+  #   if filename.suffix == '.json':
+  #     filename.write(json.dumps(dict(self)))
+  #   elif filename.suffix in ('.yml', '.yaml'):
+  #     import ruamel.yaml as yaml
+  #     with io.StringIO() as stream:
+  #       yaml.safe_dump(dict(self), stream)
+  #       filename.write(stream.getvalue())
+  #   else:
+  #     raise NotImplementedError(filename.suffix)
   def save(self, filename):
     filename = path.Path(filename)
     if filename.suffix == '.json':
       filename.write(json.dumps(dict(self)))
     elif filename.suffix in ('.yml', '.yaml'):
-      import ruamel.yaml as yaml
+      from ruamel.yaml import YAML
+      yaml = YAML(typ='safe')
       with io.StringIO() as stream:
-        yaml.safe_dump(dict(self), stream)
+        yaml.dump(dict(self), stream)
         filename.write(stream.getvalue())
     else:
       raise NotImplementedError(filename.suffix)
